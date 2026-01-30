@@ -15,6 +15,10 @@ excerpt: |
 
 # JAXB使用文档
 
+本文介绍了JAXB（Java Architecture for XML Binding）的使用方法，包括Maven依赖配置、从XSD生成Java类、XML序列化与反序列化等技术要点。
+
+<!-- more -->
+
 ## 1. 导入依赖与设置JAXB代码生成插件
 
 ```xml
