@@ -1,0 +1,488 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧩 拼图游戏 - 炜煜之博客</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 { color: #fff; margin-bottom: 15px; font-size: 2em; }
+        .game-container {
+            display: flex;
+            gap: 30px;
+            align-items: flex-start;
+        }
+        canvas { border-radius: 10px; box-shadow: 0 0 30px rgba(253, 203, 110, 0.3); cursor: pointer; }
+        .side-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            min-width: 220px;
+        }
+        .info-box {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 20px;
+            border-radius: 10px;
+            color: #fff;
+        }
+        .info-label { color: #aaa; font-size: 0.9em; }
+        .info-value { font-size: 1.5em; font-weight: bold; color: #fdcb6e; }
+        .difficulty-btns {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+        .diff-btn {
+            padding: 10px 18px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .diff-btn.easy { background: #00b894; color: white; }
+        .diff-btn.medium { background: #fdcb6e; color: #333; }
+        .diff-btn.hard { background: #e17055; color: white; }
+        .diff-btn.active { outline: 3px solid #fff; }
+        .diff-btn:hover { transform: translateY(-2px); }
+        
+        .preview-canvas {
+            border-radius: 8px;
+            border: 2px solid rgba(255,255,255,0.2);
+        }
+        .controls {
+            margin-top: 20px;
+            color: #aaa;
+            text-align: center;
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+        .image-select {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 8px;
+            margin-top: 10px;
+        }
+        .img-btn {
+            width: 50px;
+            height: 50px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            background-size: cover;
+            transition: all 0.3s;
+        }
+        .img-btn.active { border-color: #fdcb6e; transform: scale(1.1); }
+    </style>
+</head>
+<body>
+    <h1>🧩 拼图游戏</h1>
+    <div class="game-container">
+        <div>
+            <canvas id="gameCanvas"></canvas>
+        </div>
+        <div class="side-panel">
+            <div class="info-box">
+                <div class="info-label">难度</div>
+                <div class="difficulty-btns">
+                    <button class="diff-btn easy active" onclick="setDifficulty(3)">简单</button>
+                    <button class="diff-btn medium" onclick="setDifficulty(4)">中等</button>
+                    <button class="diff-btn hard" onclick="setDifficulty(5)">困难</button>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">选择图案</div>
+                <div class="image-select" id="imageSelect">
+                    <button class="img-btn active" onclick="setImage(0)" style="background: linear-gradient(135deg, #667eea, #764ba2);"></button>
+                    <button class="img-btn" onclick="setImage(1)" style="background: linear-gradient(135deg, #f093fb, #f5576c);"></button>
+                    <button class="img-btn" onclick="setImage(2)" style="background: linear-gradient(135deg, #4facfe, #00f2fe);"></button>
+                    <button class="img-btn" onclick="setImage(3)" style="background: linear-gradient(135deg, #43e97b, #38f9d7);"></button>
+                    <button class="img-btn" onclick="setImage(4)" style="background: linear-gradient(135deg, #fa709a, #fee140);"></button>
+                    <button class="img-btn" onclick="setImage(5)" style="background: linear-gradient(135deg, #a8edea, #fed6e3);"></button>
+                </div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">预览</div>
+                <canvas id="previewCanvas" class="preview-canvas" width="150" height="150"></canvas>
+            </div>
+            <div class="info-box">
+                <div class="info-label">步数</div>
+                <div class="info-value" id="moves">0</div>
+            </div>
+            <div class="info-box">
+                <div class="info-label">时间</div>
+                <div class="info-value" id="timer">0:00</div>
+            </div>
+        </div>
+    </div>
+    <div class="controls">
+        <p>🖱️ 点击两个方块交换位置 | 🔄 点击重新开始 | ⏱️ 步数越少越好！</p>
+    </div>
+    <a href="index.html" class="back-btn">← 返回游戏选择</a>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const previewCanvas = document.getElementById('previewCanvas');
+        const previewCtx = previewCanvas.getContext('2d');
+        
+        const GRID_SIZE = 3;
+        let PUZZLE_SIZE = 300;
+        let CELL_SIZE = PUZZLE_SIZE / GRID_SIZE;
+        
+        let pieces = [];
+        let emptyCell = { row: GRID_SIZE - 1, col: GRID_SIZE - 1 };
+        let selectedPiece = null;
+        let moves = 0;
+        let startTime = null;
+        let timerInterval = null;
+        let gameWon = false;
+        let currentImage = 0;
+        
+        const GRADIENTS = [
+            ['#667eea', '#764ba2'],
+            ['#f093fb', '#f5576c'],
+            ['#4facfe', '#00f2fe'],
+            ['#43e97b', '#38f9d7'],
+            ['#fa709a', '#fee140'],
+            ['#a8edea', '#fed6e3']
+        ];
+        
+        function generateGradient(ctx, width, height, colors) {
+            const gradient = ctx.createLinearGradient(0, 0, width, height);
+            gradient.addColorStop(0, colors[0]);
+            gradient.addColorStop(1, colors[1]);
+            return gradient;
+        }
+        
+        function drawPieceImage(ctx, x, y, size, row, col, imageIdx) {
+            const colors = GRADIENTS[imageIdx];
+            
+            // 绘制渐变背景
+            ctx.fillStyle = generateGradient(ctx, size, size, colors);
+            ctx.fillRect(x, y, size, size);
+            
+            // 添加装饰图案
+            const cx = x + size / 2;
+            const cy = y + size / 2;
+            
+            // 根据位置绘制不同图案
+            const patterns = [
+                () => {
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, size * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                },
+                () => {
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.fillRect(x + size * 0.2, y + size * 0.2, size * 0.6, size * 0.6);
+                },
+                () => {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(x + size * 0.2, y + size * 0.8);
+                    ctx.lineTo(cx, y + size * 0.2);
+                    ctx.lineTo(x + size * 0.8, y + size * 0.8);
+                    ctx.stroke();
+                },
+                () => {
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    for (let i = 0; i < 3; i++) {
+                        ctx.beginPath();
+                        ctx.arc(x + size * (0.2 + i * 0.3), cy, size * 0.15, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                },
+                () => {
+                    ctx.strokeStyle = 'rgba(255,255,255,0.4)';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, size * 0.35, 0, Math.PI * 2);
+                    ctx.stroke();
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, size * 0.2, 0, Math.PI * 2);
+                    ctx.stroke();
+                },
+                () => {
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.beginPath();
+                    ctx.moveTo(cx, y + size * 0.2);
+                    ctx.lineTo(x + size * 0.8, y + size * 0.8);
+                    ctx.lineTo(x + size * 0.2, y + size * 0.8);
+                    ctx.closePath();
+                    ctx.fill();
+                }
+            ];
+            
+            patterns[imageIdx % patterns.length]();
+            
+            // 绘制数字
+            ctx.fillStyle = 'rgba(255,255,255,0.9)';
+            ctx.font = `bold ${size * 0.4}px Arial`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(row * GRID_SIZE + col + 1, cx, cy);
+        }
+        
+        function initPuzzle() {
+            pieces = [];
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    pieces.push({
+                        row: row,
+                        col: col,
+                        correctRow: row,
+                        correctCol: col
+                    });
+                }
+            }
+            
+            // 随机打乱
+            shufflePuzzle();
+        }
+        
+        function shufflePuzzle() {
+            // 随机交换多个次
+            const shuffleCount = GRID_SIZE * GRID_SIZE * 20;
+            for (let i = 0; i < shuffleCount; i++) {
+                const neighbors = getNeighbors(emptyCell);
+                const randomNeighbor = neighbors[Math.floor(Math.random() * neighbors.length)];
+                swapPieces(randomNeighbor, emptyCell);
+                emptyCell = randomNeighbor;
+            }
+        }
+        
+        function getNeighbors(cell) {
+            const neighbors = [];
+            if (cell.row > 0) neighbors.push({ row: cell.row - 1, col: cell.col });
+            if (cell.row < GRID_SIZE - 1) neighbors.push({ row: cell.row + 1, col: cell.col });
+            if (cell.col > 0) neighbors.push({ row: cell.row, col: cell.col - 1 });
+            if (cell.col < GRID_SIZE - 1) neighbors.push({ row: cell.row, col: cell.col + 1 });
+            return neighbors;
+        }
+        
+        function swapPieces(cell1, cell2) {
+            const piece1 = pieces.find(p => p.row === cell1.row && p.col === cell1.col);
+            const piece2 = pieces.find(p => p.row === cell2.row && p.col === cell2.col);
+            const tempRow = piece1.row;
+            const tempCol = piece1.col;
+            piece1.row = piece2.row;
+            piece1.col = piece2.col;
+            piece2.row = tempRow;
+            piece2.col = tempCol;
+        }
+        
+        function draw() {
+            ctx.fillStyle = '#1a1a2e';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制每个拼图块
+            pieces.forEach((piece, index) => {
+                const x = piece.col * CELL_SIZE;
+                const y = piece.row * CELL_SIZE;
+                
+                // 绘制拼图块
+                drawPieceImage(ctx, x, y, CELL_SIZE, piece.correctRow, piece.correctCol, currentImage);
+                
+                // 选中高亮
+                if (selectedPiece === piece) {
+                    ctx.strokeStyle = '#fdcb6e';
+                    ctx.lineWidth = 4;
+                    ctx.strokeRect(x + 2, y + 2, CELL_SIZE - 4, CELL_SIZE - 4);
+                }
+                
+                // 正确位置边框
+                if (piece.row === piece.correctRow && piece.col === piece.correctCol) {
+                    ctx.strokeStyle = 'rgba(0, 184, 148, 0.3)';
+                    ctx.lineWidth = 2;
+                    ctx.strokeRect(x + 5, y + 5, CELL_SIZE - 10, CELL_SIZE - 10);
+                }
+            });
+            
+            // 游戏结束
+            if (gameWon) {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#00b894';
+                ctx.font = 'bold 40px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🎉 恭喜完成!', canvas.width/2, canvas.height/2 - 40);
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = '25px Arial';
+                ctx.fillText(`用时: ${document.getElementById('timer').textContent}`, canvas.width/2, canvas.height/2 + 10);
+                ctx.fillText(`步数: ${moves}`, canvas.width/2, canvas.height/2 + 50);
+            }
+            
+            requestAnimationFrame(draw);
+        }
+        
+        function drawPreview() {
+            previewCtx.fillStyle = '#1a1a2e';
+            previewCtx.fillRect(0, 0, 150, 150);
+            
+            const previewCellSize = 150 / GRID_SIZE;
+            for (let row = 0; row < GRID_SIZE; row++) {
+                for (let col = 0; col < GRID_SIZE; col++) {
+                    const x = col * previewCellSize;
+                    const y = row * previewCellSize;
+                    
+                    // 绘制正确顺序的图案
+                    previewCtx.fillStyle = generateGradient(previewCtx, previewCellSize, previewCellSize, GRADIENTS[currentImage]);
+                    previewCtx.fillRect(x, y, previewCellSize, previewCellSize);
+                    
+                    previewCtx.fillStyle = 'rgba(255,255,255,0.8)';
+                    previewCtx.font = `bold ${previewCellSize * 0.4}px Arial`;
+                    previewCtx.textAlign = 'center';
+                    previewCtx.textBaseline = 'middle';
+                    previewCtx.fillText(row * GRID_SIZE + col + 1, x + previewCellSize/2, y + previewCellSize/2);
+                }
+            }
+        }
+        
+        function setDifficulty(size) {
+            GRID_SIZE = size;
+            CELL_SIZE = PUZZLE_SIZE / GRID_SIZE;
+            canvas.width = PUZZLE_SIZE;
+            canvas.height = PUZZLE_SIZE;
+            
+            document.querySelectorAll('.diff-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            resetGame();
+        }
+        
+        function setImage(idx) {
+            currentImage = idx;
+            document.querySelectorAll('.img-btn').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.img-btn')[idx].classList.add('active');
+            drawPreview();
+            resetGame();
+        }
+        
+        function checkWin() {
+            const isWin = pieces.every(p => 
+                p.row === p.correctRow && p.col === p.correctCol
+            );
+            
+            if (isWin) {
+                gameWon = true;
+                clearInterval(timerInterval);
+                
+                // 绘制完整图案
+                setTimeout(() => {
+                    ctx.fillStyle = generateGradient(ctx, canvas.width, canvas.height, GRADIENTS[currentImage]);
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 添加装饰
+                    const cx = canvas.width / 2;
+                    const cy = canvas.height / 2;
+                    ctx.fillStyle = 'rgba(255,255,255,0.2)';
+                    ctx.beginPath();
+                    ctx.arc(cx, cy, canvas.width * 0.3, 0, Math.PI * 2);
+                    ctx.fill();
+                }, 500);
+            }
+        }
+        
+        function resetGame() {
+            initPuzzle();
+            selectedPiece = null;
+            moves = 0;
+            gameWon = false;
+            startTime = null;
+            
+            if (timerInterval) clearInterval(timerInterval);
+            
+            document.getElementById('moves').textContent = '0';
+            document.getElementById('timer').textContent = '0:00';
+            
+            drawPreview();
+        }
+        
+        function updateTimer() {
+            if (!startTime) {
+                startTime = Date.now();
+            }
+            const elapsed = Math.floor((Date.now() - startTime) / 1000);
+            const min = Math.floor(elapsed / 60);
+            const sec = elapsed % 60;
+            document.getElementById('timer').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+        }
+        
+        canvas.addEventListener('click', (e) => {
+            if (gameWon) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            
+            const col = Math.floor(x / CELL_SIZE);
+            const row = Math.floor(y / CELL_SIZE);
+            
+            const clickedPiece = pieces.find(p => p.row === row && p.col === col);
+            if (!clickedPiece) return;
+            
+            if (!selectedPiece) {
+                selectedPiece = clickedPiece;
+            } else {
+                // 检查是否相邻
+                const dr = Math.abs(selectedPiece.row - clickedPiece.row);
+                const dc = Math.abs(selectedPiece.col - clickedPiece.col);
+                
+                if ((dr === 1 && dc === 0) || (dr === 0 && dc === 1)) {
+                    // 交换
+                    const tempRow = selectedPiece.row;
+                    const tempCol = selectedPiece.col;
+                    selectedPiece.row = clickedPiece.row;
+                    selectedPiece.col = clickedPiece.col;
+                    clickedPiece.row = tempRow;
+                    clickedPiece.col = tempCol;
+                    
+                    // 更新空格位置
+                    if (selectedPiece.row === emptyCell.row && selectedPiece.col === emptyCell.col) {
+                        emptyCell = { row: clickedPiece.row, col: clickedPiece.col };
+                    } else if (clickedPiece.row === emptyCell.row && clickedPiece.col === emptyCell.col) {
+                        emptyCell = { row: selectedPiece.row, col: selectedPiece.col };
+                    }
+                    
+                    moves++;
+                    document.getElementById('moves').textContent = moves;
+                    
+                    if (!startTime) {
+                        startTime = Date.now();
+                        timerInterval = setInterval(updateTimer, 1000);
+                    }
+                    
+                    checkWin();
+                }
+                selectedPiece = null;
+            }
+        });
+        
+        resetGame();
+        draw();
+    </script>
+</body>
+</html>

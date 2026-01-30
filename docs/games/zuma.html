@@ -1,17 +1,17 @@
-<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>炜煜之博客 | 炜煜之博客</title><meta name="author" content="炜煜"><meta name="copyright" content="炜煜"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="贪吃蛇 - 炜煜之博客              * {             margin: 0;             padding: 0;             box-sizing: border-box;         }                  body {             font-family: &#39;Segoe UI&#39;,">
+<!DOCTYPE html><html lang="zh-CN" data-theme="light"><head><meta charset="UTF-8"><meta http-equiv="X-UA-Compatible" content="IE=edge"><meta name="viewport" content="width=device-width, initial-scale=1.0,viewport-fit=cover"><title>炜煜之博客 | 炜煜之博客</title><meta name="author" content="炜煜"><meta name="copyright" content="炜煜"><meta name="format-detection" content="telephone=no"><meta name="theme-color" content="#ffffff"><meta name="description" content="🌟 祖玛 - 炜煜之博客              * { margin: 0; padding: 0; box-sizing: border-box; }         body {             font-family: &#39;Segoe UI&#39;, sans-serif;             background: linear-gradient">
 <meta property="og:type" content="website">
 <meta property="og:title" content="炜煜之博客">
-<meta property="og:url" content="https://njuywy.github.io/my-blog/games/snake.html">
+<meta property="og:url" content="https://njuywy.github.io/my-blog/games/zuma.html">
 <meta property="og:site_name" content="炜煜之博客">
-<meta property="og:description" content="贪吃蛇 - 炜煜之博客              * {             margin: 0;             padding: 0;             box-sizing: border-box;         }                  body {             font-family: &#39;Segoe UI&#39;,">
+<meta property="og:description" content="🌟 祖玛 - 炜煜之博客              * { margin: 0; padding: 0; box-sizing: border-box; }         body {             font-family: &#39;Segoe UI&#39;, sans-serif;             background: linear-gradient">
 <meta property="og:locale" content="zh_CN">
 <meta property="og:image" content="https://njuywy.github.io/my-blog/img/avatar.png">
-<meta property="article:published_time" content="2026-01-30T08:00:41.613Z">
-<meta property="article:modified_time" content="2026-01-30T08:00:41.613Z">
+<meta property="article:published_time" content="2026-01-30T08:43:21.797Z">
+<meta property="article:modified_time" content="2026-01-30T08:43:21.797Z">
 <meta property="article:author" content="炜煜">
 <meta property="article:tag" content="技术, 生活, 编程">
 <meta name="twitter:card" content="summary">
-<meta name="twitter:image" content="https://njuywy.github.io/my-blog/img/avatar.png"><script type="application/ld+json"></script><link rel="shortcut icon" href="/my-blog/img/favicon.png"><link rel="canonical" href="https://njuywy.github.io/my-blog/games/snake.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/my-blog/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
+<meta name="twitter:image" content="https://njuywy.github.io/my-blog/img/avatar.png"><script type="application/ld+json"></script><link rel="shortcut icon" href="/my-blog/img/favicon.png"><link rel="canonical" href="https://njuywy.github.io/my-blog/games/zuma.html"><link rel="preconnect" href="//cdn.jsdelivr.net"/><link rel="preconnect" href="//busuanzi.ibruce.info"/><link rel="stylesheet" href="/my-blog/css/index.css?v=5.5.4"><link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@7.1.0/css/all.min.css"><script>
     (() => {
       
     const saveToLocal = {
@@ -149,62 +149,42 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>贪吃蛇 - 炜煜之博客</title>
+    <title>🌟 祖玛 - 炜煜之博客</title>
     <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
+        * { margin: 0; padding: 0; box-sizing: border-box; }
         body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-family: 'Segoe UI', sans-serif;
             background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
             min-height: 100vh;
             display: flex;
             flex-direction: column;
             align-items: center;
-            justify-content: center;
             padding: 20px;
         }
-        
-        h1 {
-            color: #fff;
-            margin-bottom: 20px;
-            font-size: 2em;
-        }
-        
-        #gameCanvas {
-            border: 3px solid #667eea;
-            border-radius: 10px;
-            background: #000;
-            box-shadow: 0 0 30px rgba(102, 126, 234, 0.5);
-        }
-        
+        h1 { color: #fff; margin-bottom: 15px; font-size: 2em; }
+        #gameContainer { position: relative; }
+        canvas { border-radius: 10px; box-shadow: 0 0 30px rgba(255, 107, 107, 0.3); }
         .info {
             display: flex;
-            gap: 40px;
+            gap: 50px;
             margin-top: 20px;
             color: #fff;
-            font-size: 1.2em;
+            font-size: 1.3em;
         }
-        
-        .info span {
+        .score-box {
             background: rgba(255,255,255,0.1);
             padding: 10px 25px;
-            border-radius: 25px;
+            border-radius: 10px;
         }
-        
         .controls {
-            margin-top: 20px;
+            margin-top: 15px;
             color: #aaa;
             text-align: center;
         }
-        
         .back-btn {
             display: inline-block;
             padding: 12px 30px;
-            margin-top: 30px;
+            margin-top: 20px;
             background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
             color: white;
             text-decoration: none;
@@ -212,261 +192,387 @@
             font-weight: bold;
             transition: transform 0.3s;
         }
-        
-        .back-btn:hover {
-            transform: translateY(-3px);
-        }
+        .back-btn:hover { transform: translateY(-3px); }
     </style>
 </head>
 <body>
-    <h1>🐍 贪吃蛇</h1>
-    <canvas id="gameCanvas" width="400" height="400"></canvas>
+    <h1>🌟 祖玛</h1>
+    <div id="gameContainer">
+        <canvas id="gameCanvas" width="800" height="500"></canvas>
+    </div>
     <div class="info">
-        <span>得分: <span id="score">0</span></span>
-        <span>最高分: <span id="highScore">0</span></span>
+        <div class="score-box">分数: <span id="score">0</span></div>
+        <div class="score-box">关卡: <span id="level">1</span></div>
+        <div class="score-box">消除: <span id="combo">0</span>连击</div>
     </div>
     <div class="controls">
-        <p>使用方向键 ↑ ↓ ← → 控制移动 | 空格键暂停</p>
+        <p>🖱️ 鼠标瞄准 | 🎯 左键射击 | 三个以上同色消除</p>
     </div>
     <a href="index.html" class="back-btn">← 返回游戏选择</a>
 
     <script>
         const canvas = document.getElementById('gameCanvas');
         const ctx = canvas.getContext('2d');
-        const scoreEl = document.getElementById('score');
-        const highScoreEl = document.getElementById('highScore');
         
-        const gridSize = 20;
-        const tileCount = canvas.width / gridSize;
+        const COLORS = ['#ff6b6b', '#4ecdc4', '#ffe66d', '#95e1d3', '#f38181'];
+        const COLOR_NAMES = ['红', '青', '黄', '绿', '粉'];
         
-        let snake = [];
-        let food = {};
-        let direction = { x: 1, y: 0 };
-        let nextDirection = { x: 1, y: 0 };
         let score = 0;
-        let highScore = localStorage.getItem('snakeHighScore') || 0;
-        let gameLoop;
+        let level = 1;
+        let combo = 0;
+        let gameOver = false;
+        let gameWon = false;
+        let balls = [];
+        let shooter = { x: 400, y: 460, angle: -Math.PI/2, nextColor: 0, currentColor: 0 };
+        let aimLine = { startX: 400, startY: 460, endX: 400, endY: 300 };
+        let path = [];
+        let particles = [];
+        let powerUps = [];
         let isPaused = false;
-        let gameSpeed = 100;
         
-        highScoreEl.textContent = highScore;
-        
-        function initGame() {
-            snake = [
-                { x: 5, y: 10 },
-                { x: 4, y: 10 },
-                { x: 3, y: 10 }
+        // 生成复杂路径
+        function generatePath() {
+            path = [];
+            let x = 100, y = 100;
+            const points = [
+                {x: 100, y: 80}, {x: 400, y: 80}, {x: 700, y: 150}, 
+                {x: 700, y: 300}, {x: 400, y: 400}, {x: 100, y: 350},
+                {x: 100, y: 200}, {x: 400, y: 200}, {x: 600, y: 250}
             ];
-            direction = { x: 1, y: 0 };
-            nextDirection = { x: 1, y: 0 };
-            score = 0;
-            scoreEl.textContent = score;
-            spawnFood();
-        }
-        
-        function spawnFood() {
-            do {
-                food = {
-                    x: Math.floor(Math.random() * tileCount),
-                    y: Math.floor(Math.random() * tileCount)
-                };
-            } while (snake.some(segment => segment.x === food.x && segment.y === food.y));
-        }
-        
-        function update() {
-            direction = { ...nextDirection };
             
-            const head = {
-                x: snake[0].x + direction.x,
-                y: snake[0].y + direction.y
-            };
-            
-            // 穿墙
-            if (head.x < 0) head.x = tileCount - 1;
-            if (head.x >= tileCount) head.x = 0;
-            if (head.y < 0) head.y = tileCount - 1;
-            if (head.y >= tileCount) head.y = 0;
-            
-            // 撞到自己
-            if (snake.some(segment => segment.x === head.x && segment.y === head.y)) {
-                gameOver();
-                return;
-            }
-            
-            snake.unshift(head);
-            
-            // 吃到食物
-            if (head.x === food.x && head.y === food.y) {
-                score += 10;
-                scoreEl.textContent = score;
-                spawnFood();
-                // 速度加快
-                if (score % 50 === 0 && gameSpeed > 50) {
-                    gameSpeed -= 5;
-                    clearInterval(gameLoop);
-                    gameLoop = setInterval(gameStep, gameSpeed);
+            for (let i = 0; i < points.length - 1; i++) {
+                const p1 = points[i], p2 = points[i+1];
+                const steps = 30;
+                for (let j = 0; j < steps; j++) {
+                    const t = j / steps;
+                    path.push({
+                        x: p1.x + (p2.x - p1.x) * t,
+                        y: p1.y + (p2.y - p1.y) * t
+                    });
                 }
-            } else {
-                snake.pop();
             }
         }
         
-        function draw() {
-            // 清空画布
-            ctx.fillStyle = '#000';
-            ctx.fillRect(0, 0, canvas.width, canvas.height);
-            
-            // 绘制网格
-            ctx.strokeStyle = '#1a1a2e';
-            for (let i = 0; i <= tileCount; i++) {
-                ctx.beginPath();
-                ctx.moveTo(i * gridSize, 0);
-                ctx.lineTo(i * gridSize, canvas.height);
-                ctx.stroke();
-                ctx.beginPath();
-                ctx.moveTo(0, i * gridSize);
-                ctx.lineTo(canvas.width, i * gridSize);
-                ctx.stroke();
+        function initBalls() {
+            balls = [];
+            const startIdx = path.length - 100;
+            for (let i = 0; i < 30 + level * 5; i++) {
+                balls.push({
+                    pathIdx: startIdx + i * 3,
+                    color: Math.floor(Math.random() * COLORS.length),
+                    radius: 15,
+                    offset: 0
+                });
             }
-            
-            // 绘制食物
-            ctx.fillStyle = '#ff6b6b';
+        }
+        
+        function drawPath() {
+            ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+            ctx.lineWidth = 40;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
             ctx.beginPath();
-            ctx.arc(
-                food.x * gridSize + gridSize / 2,
-                food.y * gridSize + gridSize / 2,
-                gridSize / 2 - 2,
-                0,
-                Math.PI * 2
-            );
-            ctx.fill();
-            
-            // 绘制蛇
-            snake.forEach((segment, index) => {
-                const gradient = ctx.createRadialGradient(
-                    segment.x * gridSize + gridSize / 2,
-                    segment.y * gridSize + gridSize / 2,
-                    0,
-                    segment.x * gridSize + gridSize / 2,
-                    segment.y * gridSize + gridSize / 2,
-                    gridSize / 2
-                );
-                
-                if (index === 0) {
-                    gradient.addColorStop(0, '#48dbfb');
-                    gradient.addColorStop(1, '#0abde3');
-                } else {
-                    gradient.addColorStop(0, '#667eea');
-                    gradient.addColorStop(1, '#764ba2');
-                }
-                
-                ctx.fillStyle = gradient;
-                ctx.beginPath();
-                ctx.roundRect(
-                    segment.x * gridSize + 1,
-                    segment.y * gridSize + 1,
-                    gridSize - 2,
-                    gridSize - 2,
-                    5
-                );
-                ctx.fill();
-                
-                // 蛇眼睛
-                if (index === 0) {
-                    ctx.fillStyle = '#fff';
+            path.forEach((p, i) => {
+                if (i === 0) ctx.moveTo(p.x, p.y);
+                else ctx.lineTo(p.x, p.y);
+            });
+            ctx.stroke();
+        }
+        
+        function drawBalls() {
+            balls.forEach((ball, i) => {
+                const pos = path[Math.floor(ball.pathIdx)];
+                if (pos) {
+                    // 发光效果
+                    ctx.shadowBlur = 15;
+                    ctx.shadowColor = COLORS[ball.color];
+                    ctx.fillStyle = COLORS[ball.color];
                     ctx.beginPath();
-                    ctx.arc(
-                        segment.x * gridSize + gridSize / 2 - 3,
-                        segment.y * gridSize + gridSize / 2 - 2,
-                        3,
-                        0,
-                        Math.PI * 2
-                    );
-                    ctx.arc(
-                        segment.x * gridSize + gridSize / 2 + 3,
-                        segment.y * gridSize + gridSize / 2 - 2,
-                        3,
-                        0,
-                        Math.PI * 2
-                    );
+                    ctx.arc(pos.x, pos.y, ball.radius, 0, Math.PI * 2);
+                    ctx.fill();
+                    ctx.shadowBlur = 0;
+                    
+                    // 高光
+                    ctx.fillStyle = 'rgba(255,255,255,0.3)';
+                    ctx.beginPath();
+                    ctx.arc(pos.x - 4, pos.y - 4, 5, 0, Math.PI * 2);
                     ctx.fill();
                 }
             });
+        }
+        
+        function drawShooter() {
+            // 炮台底座
+            ctx.fillStyle = '#2d3436';
+            ctx.beginPath();
+            ctx.arc(shooter.x, shooter.y, 35, 0, Math.PI * 2);
+            ctx.fill();
             
-            // 暂停提示
-            if (isPaused) {
-                ctx.fillStyle = 'rgba(0,0,0,0.7)';
-                ctx.fillRect(0, 0, canvas.width, canvas.height);
-                ctx.fillStyle = '#fff';
-                ctx.font = '30px Arial';
-                ctx.textAlign = 'center';
-                ctx.fillText('游戏暂停', canvas.width / 2, canvas.height / 2);
+            // 炮管
+            ctx.save();
+            ctx.translate(shooter.x, shooter.y);
+            ctx.rotate(shooter.angle + Math.PI/2);
+            ctx.fillStyle = '#636e72';
+            ctx.fillRect(-8, -40, 16, 40);
+            ctx.restore();
+            
+            // 待发射球
+            ctx.shadowBlur = 10;
+            ctx.shadowColor = COLORS[shooter.currentColor];
+            ctx.fillStyle = COLORS[shooter.currentColor];
+            ctx.beginPath();
+            ctx.arc(shooter.x + Math.cos(shooter.angle) * 30, 
+                    shooter.y + Math.sin(shooter.angle) * 30, 
+                    15, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.shadowBlur = 0;
+        }
+        
+        function drawAimLine() {
+            ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+            ctx.lineWidth = 2;
+            ctx.setLineDash([10, 10]);
+            ctx.beginPath();
+            ctx.moveTo(shooter.x, shooter.y);
+            ctx.lineTo(
+                shooter.x + Math.cos(shooter.angle) * 500,
+                shooter.y + Math.sin(shooter.angle) * 500
+            );
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        let bullets = [];
+        function shoot() {
+            bullets.push({
+                x: shooter.x,
+                y: shooter.y,
+                vx: Math.cos(shooter.angle) * 12,
+                vy: Math.sin(shooter.angle) * 12,
+                color: shooter.currentColor,
+                trail: []
+            });
+            shooter.currentColor = shooter.nextColor;
+            shooter.nextColor = Math.floor(Math.random() * COLORS.length);
+        }
+        
+        function updateBullets() {
+            bullets = bullets.filter(b => {
+                b.trail.push({x: b.x, y: b.y});
+                if (b.trail.length > 10) b.trail.shift();
+                
+                b.x += b.vx;
+                b.y += b.vy;
+                
+                // 绘制拖尾
+                b.trail.forEach((t, i) => {
+                    ctx.fillStyle = COLORS[b.color] + Math.floor(i * 25).toString(16).padStart(2, '0');
+                    ctx.beginPath();
+                    ctx.arc(t.x, t.y, 3, 0, Math.PI * 2);
+                    ctx.fill();
+                });
+                
+                // 边界检测
+                if (b.x < 0 || b.x > canvas.width || b.y < 0 || b.y > canvas.height) {
+                    return false;
+                }
+                
+                // 碰撞检测
+                for (let i = balls.length - 1; i >= 0; i--) {
+                    const ball = balls[i];
+                    const pos = path[Math.floor(ball.pathIdx)];
+                    if (pos) {
+                        const dx = b.x - pos.x;
+                        const dy = b.y - pos.y;
+                        const dist = Math.sqrt(dx*dx + dy*dy);
+                        if (dist < 30) {
+                            handleCollision(b, i);
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            });
+        }
+        
+        function handleCollision(bullet, ballIdx) {
+            const targetBall = balls[ballIdx];
+            const insertIdx = findInsertPosition(ballIdx, bullet.color);
+            
+            // 插入新球
+            balls.splice(insertIdx, 0, {
+                pathIdx: targetBall.pathIdx - 2,
+                color: bullet.color,
+                radius: 15
+            });
+            
+            // 检查消除
+            const toRemove = findMatchingBalls(insertIdx, bullet.color);
+            if (toRemove.length >= 3) {
+                combo++;
+                const bonus = toRemove.length * 10 * combo;
+                score += bonus;
+                document.getElementById('score').textContent = score;
+                document.getElementById('combo').textContent = combo;
+                
+                // 特效
+                toRemove.forEach(idx => {
+                    createExplosion(path[Math.floor(balls[idx].pathIdx)], COLORS[balls[idx].color]);
+                });
+                balls.splice(toRemove.min(), toRemove.length);
+                
+                // 检查前进
+                setTimeout(() => advanceBalls(), 200);
+            } else {
+                combo = 0;
+                document.getElementById('combo').textContent = 0;
             }
         }
         
-        function gameStep() {
-            if (!isPaused) {
-                update();
-                draw();
+        function findInsertPosition(ballIdx, color) {
+            for (let i = ballIdx; i >= 0; i--) {
+                if (balls[i].color === color) {
+                    return i + 1;
+                }
+            }
+            return ballIdx;
+        }
+        
+        function findMatchingBalls(startIdx, color) {
+            const result = [startIdx];
+            let left = startIdx - 1;
+            let right = startIdx + 1;
+            
+            while (left >= 0 && balls[left].color === color) {
+                result.push(left);
+                left--;
+            }
+            while (right < balls.length && balls[right].color === color) {
+                result.push(right);
+                right++;
+            }
+            return result.sort((a, b) => a - b);
+        }
+        
+        Array.prototype.min = function() { return Math.min(...this); };
+        
+        function advanceBalls() {
+            const speed = 2 + level * 0.5;
+            balls.forEach(ball => ball.pathIdx -= speed);
+            
+            // 检查游戏结束
+            const frontBall = balls[0];
+            if (frontBall && frontBall.pathIdx < 5) {
+                gameOver = true;
+            }
+            
+            // 检查过关
+            if (balls.length === 0) {
+                level++;
+                document.getElementById('level').textContent = level;
+                initBalls();
             }
         }
         
-        function gameOver() {
-            clearInterval(gameLoop);
-            
-            if (score > highScore) {
-                highScore = score;
-                localStorage.setItem('snakeHighScore', highScore);
-                highScoreEl.textContent = highScore;
+        function createExplosion(pos, color) {
+            for (let i = 0; i < 15; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 5 + 2;
+                particles.push({
+                    x: pos.x,
+                    y: pos.y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 30,
+                    color: color
+                });
             }
-            
-            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+        }
+        
+        function updateParticles() {
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.2;
+                p.life--;
+                
+                ctx.globalAlpha = p.life / 30;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, 4, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                return p.life > 0;
+            });
+        }
+        
+        function draw() {
+            ctx.fillStyle = '#0a0a0a';
             ctx.fillRect(0, 0, canvas.width, canvas.height);
-            ctx.fillStyle = '#ff6b6b';
-            ctx.font = '40px Arial';
-            ctx.textAlign = 'center';
-            ctx.fillText('游戏结束!', canvas.width / 2, canvas.height / 2 - 20);
-            ctx.fillStyle = '#fff';
-            ctx.font = '20px Arial';
-            ctx.fillText(`得分: ${score}`, canvas.width / 2, canvas.height / 2 + 20);
-            ctx.fillText('按空格键重新开始', canvas.width / 2, canvas.height / 2 + 60);
+            
+            if (!gameOver && !gameWon) {
+                drawPath();
+                drawBalls();
+                drawAimLine();
+                drawShooter();
+                updateBullets();
+                updateParticles();
+                
+                if (!isPaused) {
+                    if (balls.length > 0 && Math.random() < 0.01 + level * 0.005) {
+                        advanceBalls();
+                    }
+                }
+            }
+            
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#ff6b6b';
+                ctx.font = 'bold 50px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('游戏结束!', canvas.width/2, canvas.height/2 - 20);
+                ctx.fillStyle = '#fff';
+                ctx.font = '25px Arial';
+                ctx.fillText(`最终分数: ${score}`, canvas.width/2, canvas.height/2 + 30);
+                ctx.font = '20px Arial';
+                ctx.fillText('按空格键重新开始', canvas.width/2, canvas.height/2 + 70);
+            }
+            
+            requestAnimationFrame(draw);
         }
+        
+        // 事件监听
+        canvas.addEventListener('mousemove', (e) => {
+            const rect = canvas.getBoundingClientRect();
+            const mx = e.clientX - rect.left;
+            const my = e.clientY - rect.top;
+            shooter.angle = Math.atan2(my - shooter.y, mx - shooter.x);
+        });
+        
+        canvas.addEventListener('click', () => {
+            if (!gameOver) shoot();
+        });
         
         document.addEventListener('keydown', (e) => {
-            if (e.code === 'Space') {
-                e.preventDefault();
-                if (isPaused && snake.length > 0) {
-                    isPaused = false;
-                } else if (snake.length === 0 || snake.some(s => s.x < 0)) {
-                    initGame();
-                    gameSpeed = 100;
-                    gameLoop = setInterval(gameStep, gameSpeed);
-                } else {
-                    isPaused = !isPaused;
-                }
-            }
-            
-            if (!isPaused) {
-                switch (e.key) {
-                    case 'ArrowUp':
-                        if (direction.y !== 1) nextDirection = { x: 0, y: -1 };
-                        break;
-                    case 'ArrowDown':
-                        if (direction.y !== -1) nextDirection = { x: 0, y: 1 };
-                        break;
-                    case 'ArrowLeft':
-                        if (direction.x !== 1) nextDirection = { x: -1, y: 0 };
-                        break;
-                    case 'ArrowRight':
-                        if (direction.x !== -1) nextDirection = { x: 1, y: 0 };
-                        break;
-                }
+            if (e.code === 'Space' && gameOver) {
+                score = 0;
+                level = 1;
+                combo = 0;
+                gameOver = false;
+                document.getElementById('score').textContent = '0';
+                document.getElementById('level').textContent = '1';
+                document.getElementById('combo').textContent = '0';
+                initBalls();
             }
         });
         
-        // 开始游戏
-        initGame();
-        gameLoop = setInterval(gameStep, gameSpeed);
+        generatePath();
+        initBalls();
+        shooter.currentColor = Math.floor(Math.random() * COLORS.length);
+        shooter.nextColor = Math.floor(Math.random() * COLORS.length);
+        draw();
     </script>
 </body>
 </html>

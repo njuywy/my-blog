@@ -1,0 +1,545 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⌨️ 打字大师 - 炜煜之博客</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+        }
+        h1 { color: #fff; margin-bottom: 15px; font-size: 2em; }
+        .game-container {
+            width: 900px;
+        }
+        .stats {
+            display: flex;
+            gap: 30px;
+            margin-bottom: 20px;
+            justify-content: center;
+        }
+        .stat-box {
+            background: rgba(255,255,255,0.1);
+            padding: 15px 30px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        .stat-label { color: #aaa; font-size: 0.9em; }
+        .stat-value { font-size: 2em; font-weight: bold; color: #74b9ff; }
+        .stat-value.green { color: #00b894; }
+        .stat-value.red { color: #ff7675; }
+        .stat-value.yellow { color: #fdcb6e; }
+        canvas {
+            border-radius: 10px;
+            box-shadow: 0 0 30px rgba(116, 185, 255, 0.3);
+            display: block;
+            margin: 0 auto;
+        }
+        .controls {
+            margin-top: 20px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+        }
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s;
+        }
+        .btn:hover { transform: translateY(-2px); }
+        .btn-primary { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; }
+        .btn-success { background: linear-gradient(135deg, #00b894 0%, #00cec9 100%); color: white; }
+        .mode-select {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 15px;
+            justify-content: center;
+        }
+        .mode-btn {
+            padding: 10px 20px;
+            border: 2px solid transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            font-weight: bold;
+        }
+        .mode-btn.active {
+            border-color: #74b9ff;
+            background: rgba(116, 185, 255, 0.2);
+        }
+        .back-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h1>⌨️ 打字大师</h1>
+    <div class="game-container">
+        <div class="mode-select">
+            <button class="mode-btn active" onclick="setMode('words')">单词模式</button>
+            <button class="mode-btn" onclick="setMode('sentence')">句子模式</button>
+            <button class="mode-btn" onclick="setMode('code')">代码模式</button>
+            <button class="mode-btn" onclick="setMode('chinese')">中文模式</button>
+        </div>
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-label">速度 (WPM)</div>
+                <div class="stat-value green" id="wpm">0</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">准确率</div>
+                <div class="stat-value yellow" id="accuracy">100%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">进度</div>
+                <div class="stat-value" id="progress">0%</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">时间</div>
+                <div class="stat-value" id="timer">0:00</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-label">连击</div>
+                <div class="stat-value red" id="combo">0</div>
+            </div>
+        </div>
+        <canvas id="gameCanvas" width="900" height="400"></canvas>
+        <div class="controls">
+            <button class="btn btn-primary" onclick="startGame()">🎮 开始游戏</button>
+            <button class="btn btn-success" onclick="resetGame()">🔄 重新开始</button>
+        </div>
+    </div>
+    <a href="index.html" class="back-btn">← 返回游戏选择</a>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        const WORDS = [
+            'algorithm', 'function', 'variable', 'constant', 'parameter', 'recursive',
+            'iteration', 'compiler', 'interpreter', 'framework', 'library', 'api',
+            'database', 'algorithm', 'encryption', 'decryption', 'compression',
+            'interface', 'abstract', 'inheritance', 'polymorphism', 'encapsulation',
+            'javascript', 'typescript', 'python', 'react', 'angular', 'vue',
+            'nodejs', 'express', 'mongodb', 'postgresql', 'docker', 'kubernetes'
+        ];
+        
+        const SENTENCES = [
+            'The quick brown fox jumps over the lazy dog.',
+            'Programming is the art of telling another human what one wants the computer to do.',
+            'Any fool can write code that a computer can understand. Good programmers write code that humans can understand.',
+            'First, solve the problem. Then, write the code.',
+            'Experience is the name everyone gives to their mistakes.',
+            'In order to be irreplaceable one must always be different.',
+            'Code is like humor. When you have to explain it, it\'s bad.',
+            'Simplicity is the soul of efficiency.',
+            'Before software can be reusable it first has to be usable.',
+            'Make it work, make it right, make it fast.'
+        ];
+        
+        const CODE_SNIPPETS = [
+            'const fibonacci = (n) => n <= 1 ? n : fibonacci(n-1) + fibonacci(n-2);',
+            'function debounce(fn, delay) { let timer; return (...args) => { clearTimeout(timer); timer = setTimeout(() => fn(...args), delay); }; }',
+            'useEffect(() => { const subscription = props.source; subscription.then(response => { setState(response); }); return () => subscription.cancel(); }, [props.source]);',
+            'for (let i = 0; i < n; i++) { if (arr[i] % 2 === 0) { even.push(arr[i]); } else { odd.push(arr[i]); } }',
+            'class Solution { findMedianSortedArrays(nums1, nums2) { const arr = [...nums1, ...nums2].sort((a,b) => a-b); } }',
+            'npm install --save-dev @types/react @types/node typescript',
+            'git commit -m "feat: add new feature" && git push origin main',
+            'docker build -t myapp:latest . && docker run -p 3000:3000 myapp:latest',
+            'SELECT * FROM users WHERE age > 18 ORDER BY created_at DESC LIMIT 10;',
+            'while (node) { if (node.val === target) return node; node = node.next; } return null;'
+        ];
+        
+        const CHINESE_WORDS = [
+            '编程', '算法', '数据结构', '面向对象', '设计模式', '函数式编程',
+            '前端开发', '后端开发', '全栈工程师', '人工智能', '机器学习', '深度学习',
+            '数据库', '缓存', '消息队列', '负载均衡', '微服务', '容器化',
+            '版本控制', '持续集成', '单元测试', '代码审查', '性能优化', '安全防护',
+            '云计算', '大数据', '区块链', '物联网', '5G网络', '边缘计算'
+        ];
+        
+        let mode = 'words';
+        let text = '';
+        let typed = '';
+        let startTime = null;
+        let timerInterval = null;
+        let wpm = 0;
+        let accuracy = 100;
+        let progress = 0;
+        let combo = 0;
+        let bestCombo = 0;
+        let mistakes = 0;
+        let totalTyped = 0;
+        let currentIndex = 0;
+        let particles = [];
+        let floatingTexts = [];
+        let gameStarted = false;
+        let gameEnded = false;
+        
+        const CHAR_WIDTH = 18;
+        const LINE_HEIGHT = 50;
+        const START_X = 50;
+        const START_Y = 80;
+        
+        function setMode(newMode) {
+            mode = newMode;
+            document.querySelectorAll('.mode-btn').forEach(btn => btn.classList.remove('active'));
+            event.target.classList.add('active');
+            resetGame();
+        }
+        
+        function generateText() {
+            switch(mode) {
+                case 'words':
+                    let words = [];
+                    for (let i = 0; i < 50; i++) {
+                        words.push(WORDS[Math.floor(Math.random() * WORDS.length)]);
+                    }
+                    return words.join(' ');
+                case 'sentence':
+                    let sentences = [];
+                    for (let i = 0; i < 3; i++) {
+                        sentences.push(SENTENCES[Math.floor(Math.random() * SENTENCES.length)]);
+                    }
+                    return sentences.join(' ');
+                case 'code':
+                    let codes = [];
+                    for (let i = 0; i < 4; i++) {
+                        codes.push(CODE_SNIPPETS[Math.floor(Math.random() * CODE_SNIPPETS.length)]);
+                    }
+                    return codes.join('\n');
+                case 'chinese':
+                    let chinese = [];
+                    for (let i = 0; i < 30; i++) {
+                        chinese.push(CHINESE_WORDS[Math.floor(Math.random() * CHINESE_WORDS.length)]);
+                    }
+                    return chinese.join(' ');
+            }
+        }
+        
+        function draw() {
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // 绘制背景网格
+            ctx.strokeStyle = 'rgba(255,255,255,0.03)';
+            ctx.lineWidth = 1;
+            for (let x = 0; x < canvas.width; x += CHAR_WIDTH) {
+                ctx.beginPath();
+                ctx.moveTo(x, 0);
+                ctx.lineTo(x, canvas.height);
+                ctx.stroke();
+            }
+            
+            // 绘制文字
+            ctx.font = mode === 'chinese' ? '28px Microsoft YaHei' : '22px Consolas, Monaco, monospace';
+            ctx.textBaseline = 'top';
+            
+            let x = START_X;
+            let y = START_Y;
+            let idx = 0;
+            
+            for (let i = 0; i < text.length; i++) {
+                const char = text[i];
+                const isTyped = i < typed.length;
+                const isCurrent = i === typed.length;
+                const isCorrect = isTyped && typed[i] === char;
+                
+                if (char === '\n') {
+                    x = START_X;
+                    y += LINE_HEIGHT;
+                    continue;
+                }
+                
+                if (isCurrent) {
+                    // 当前字符 - 光标
+                    ctx.fillStyle = 'rgba(255, 255, 255, 0.8)';
+                    ctx.fillRect(x - 2, y, 3, 35);
+                    
+                    // 预览当前字符
+                    ctx.globalAlpha = 0.5;
+                }
+                
+                if (isTyped) {
+                    ctx.fillStyle = isCorrect ? '#00b894' : '#ff7675';
+                } else {
+                    ctx.fillStyle = '#dfe6e9';
+                }
+                
+                ctx.fillText(char, x, y);
+                ctx.globalAlpha = 1;
+                
+                // 错误动画
+                if (isTyped && !isCorrect && i === typed.length - 1) {
+                    ctx.strokeStyle = '#ff7675';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.moveTo(x - 5, y + 5);
+                    ctx.lineTo(x + CHAR_WIDTH - 5, y + 30);
+                    ctx.moveTo(x + CHAR_WIDTH - 5, y + 5);
+                    ctx.lineTo(x - 5, y + 30);
+                    ctx.stroke();
+                    
+                    // 震动效果
+                    ctx.save();
+                    ctx.translate(Math.random() * 4 - 2, 0);
+                    ctx.restore();
+                }
+                
+                x += ctx.measureText(char).width + (mode === 'chinese' ? 10 : CHAR_WIDTH);
+                
+                if (x > canvas.width - 50) {
+                    x = START_X;
+                    y += LINE_HEIGHT;
+                }
+            }
+            
+            // 绘制粒子
+            particles = particles.filter(p => {
+                p.x += p.vx;
+                p.y += p.vy;
+                p.vy += 0.1;
+                p.life--;
+                p.size *= 0.95;
+                
+                ctx.globalAlpha = p.life / 20;
+                ctx.fillStyle = p.color;
+                ctx.beginPath();
+                ctx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                ctx.fill();
+                ctx.globalAlpha = 1;
+                
+                return p.life > 0;
+            });
+            
+            // 绘制浮动文字
+            floatingTexts = floatingTexts.filter(ft => {
+                ft.y -= 2;
+                ft.life--;
+                
+                ctx.globalAlpha = ft.life / 30;
+                ctx.fillStyle = ft.color;
+                ctx.font = 'bold 20px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText(ft.text, ft.x, ft.y);
+                ctx.globalAlpha = 1;
+                
+                return ft.life > 0;
+            });
+            
+            // 游戏结束
+            if (gameEnded) {
+                ctx.fillStyle = 'rgba(0,0,0,0.8)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                
+                ctx.fillStyle = '#00b894';
+                ctx.font = 'bold 40px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('🎉 完成!', canvas.width/2, canvas.height/2 - 60);
+                
+                ctx.fillStyle = '#fff';
+                ctx.font = '25px Arial';
+                ctx.fillText(`速度: ${wpm} WPM`, canvas.width/2, canvas.height/2);
+                ctx.fillText(`准确率: ${accuracy}%`, canvas.width/2, canvas.height/2 + 40);
+                ctx.fillText(`最佳连击: ${bestCombo}`, canvas.width/2, canvas.height/2 + 80);
+                
+                ctx.fillStyle = '#fdcb6e';
+                ctx.font = 'bold 30px Arial';
+                ctx.fillText(`综合评分: ${calculateGrade()}`, canvas.width/2, canvas.height/2 + 140);
+            }
+            
+            requestAnimationFrame(draw);
+        }
+        
+        function calculateGrade() {
+            const score = wpm * 0.4 + accuracy * 0.5 + Math.min(bestCombo, 20) * 2;
+            if (score >= 90) return 'S';
+            if (score >= 80) return 'A';
+            if (score >= 70) return 'B';
+            if (score >= 60) return 'C';
+            return 'D';
+        }
+        
+        function updateStats() {
+            if (!gameStarted || gameEnded) return;
+            
+            const elapsed = (Date.now() - startTime) / 60000; // 分钟
+            if (elapsed > 0) {
+                wpm = Math.round((typed.length / 5) / elapsed);
+            }
+            
+            if (totalTyped > 0) {
+                accuracy = Math.round(((totalTyped - mistakes) / totalTyped) * 100);
+            }
+            
+            progress = Math.round((typed.length / text.length) * 100);
+            
+            const seconds = Math.floor((Date.now() - startTime) / 1000);
+            const min = Math.floor(seconds / 60);
+            const sec = seconds % 60;
+            
+            document.getElementById('wpm').textContent = wpm;
+            document.getElementById('accuracy').textContent = accuracy + '%';
+            document.getElementById('progress').textContent = progress + '%';
+            document.getElementById('timer').textContent = `${min}:${sec.toString().padStart(2, '0')}`;
+            document.getElementById('combo').textContent = bestCombo;
+        }
+        
+        function createParticle(x, y, correct) {
+            const colors = correct ? ['#00b894', '#55efc4', '#81ecec'] : ['#ff7675', '#fab1a0', '#ffb8b8'];
+            for (let i = 0; i < 5; i++) {
+                const angle = Math.random() * Math.PI * 2;
+                const speed = Math.random() * 3 + 1;
+                particles.push({
+                    x: x,
+                    y: y,
+                    vx: Math.cos(angle) * speed,
+                    vy: Math.sin(angle) * speed,
+                    life: 20,
+                    color: colors[Math.floor(Math.random() * colors.length)],
+                    size: Math.random() * 4 + 2
+                });
+            }
+        }
+        
+        function createFloatingText(x, y, text, color) {
+            floatingTexts.push({
+                x: x,
+                y: y,
+                text: text,
+                color: color,
+                life: 30
+            });
+        }
+        
+        function startGame() {
+            if (gameStarted) return;
+            gameStarted = true;
+            gameEnded = false;
+            text = generateText();
+            typed = '';
+            startTime = Date.now();
+            bestCombo = 0;
+            mistakes = 0;
+            totalTyped = 0;
+            
+            timerInterval = setInterval(updateStats, 100);
+        }
+        
+        function resetGame() {
+            gameStarted = false;
+            gameEnded = false;
+            text = '';
+            typed = '';
+            wpm = 0;
+            accuracy = 100;
+            progress = 0;
+            combo = 0;
+            bestCombo = 0;
+            mistakes = 0;
+            totalTyped = 0;
+            particles = [];
+            floatingTexts = [];
+            
+            if (timerInterval) clearInterval(timerInterval);
+            
+            document.getElementById('wpm').textContent = '0';
+            document.getElementById('accuracy').textContent = '100%';
+            document.getElementById('progress').textContent = '0%';
+            document.getElementById('timer').textContent = '0:00';
+            document.getElementById('combo').textContent = '0';
+            
+            text = generateText();
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (!gameStarted || gameEnded) {
+                if (e.code === 'Space' || e.key === 'Enter') {
+                    if (!gameStarted) startGame();
+                }
+                return;
+            }
+            
+            const currentChar = text[typed.length];
+            if (!currentChar) return;
+            
+            if (e.key === 'Backspace') {
+                if (typed.length > 0) {
+                    typed = typed.slice(0, -1);
+                    totalTyped++;
+                }
+                return;
+            }
+            
+            if (e.key.length !== 1) return;
+            
+            totalTyped++;
+            
+            if (e.key === currentChar) {
+                // 正确
+                typed += e.key;
+                combo++;
+                bestCombo = Math.max(bestCombo, combo);
+                
+                // 计算位置
+                let x = START_X;
+                let y = START_Y;
+                for (let i = 0; i < typed.length - 1; i++) {
+                    const char = text[i];
+                    if (char === '\n') {
+                        x = START_X;
+                        y += LINE_HEIGHT;
+                    } else {
+                        x += ctx.measureText(char).width + (mode === 'chinese' ? 10 : CHAR_WIDTH);
+                        if (x > canvas.width - 50) {
+                            x = START_X;
+                            y += LINE_HEIGHT;
+                        }
+                    }
+                }
+                
+                if (combo > 0 && combo % 10 === 0) {
+                    createFloatingText(x + 20, y, `${combo}连击!`, '#fdcb6e');
+                }
+                
+                createParticle(x + 20, y + 20, true);
+                
+            } else {
+                // 错误
+                combo = 0;
+                mistakes++;
+                createFloatingText(START_X + typed.length * CHAR_WIDTH, START_Y + 20, '×', '#ff7675');
+            }
+            
+            updateStats();
+            
+            // 检查完成
+            if (typed.length >= text.length) {
+                gameEnded = true;
+                clearInterval(timerInterval);
+            }
+        });
+        
+        resetGame();
+        draw();
+    </script>
+</body>
+</html>
