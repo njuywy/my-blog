@@ -24,7 +24,7 @@ social:
 favicon: /img/favicon.png
 avatar:
   img: /img/avatar.png
-  effect: false
+  effect: true
   url: /my-blog/games/
 
 # Disable all banner images
