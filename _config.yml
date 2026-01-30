@@ -103,3 +103,10 @@ deploy:
   type: git
   repo: https://github.com/njuywy/my-blog.git
   branch: gh-pages
+
+# Custom configurations
+inject:
+  head:
+    - <script>console.log('彩蛋脚本已加载');</script>
+  bottom:
+    - <script src="/js/easter-egg.js"></script>
