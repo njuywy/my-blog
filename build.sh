@@ -1,11 +1,11 @@
 #!/bin/bash
 set -e
 
-# 安装 Hexo
-npm install -g hexo-cli
+# 安装 yarn
+npm install -g yarn
 
 # 安装依赖
-npm install
+yarn install
 
 # 生成静态文件
-hexo generate
+npx hexo generate
