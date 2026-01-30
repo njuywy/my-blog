@@ -1,6 +1,5 @@
 {
-  "buildCommand": "npx hexo generate",
+  "buildCommand": "bash build.sh",
   "outputDirectory": "public",
-  "installCommand": "npm install --no-audit --no-fund --legacy-peer-deps",
   "framework": "hexo"
 }
