@@ -1,0 +1,80 @@
+# --------------------------------------
+# Hexo Butterfly Theme Configuration
+# --------------------------------------
+
+# Navigation Settings
+nav:
+  logo:
+  display_title: true
+  display_post_title: true
+  fixed: false
+
+menu:
+  Home: / || fas fa-home
+  Archives: /archives/ || fas fa-archive
+  Tags: /tags/ || fas fa-tags
+  Categories: /categories/ || fas fa-th
+
+# Social media links
+social:
+  fab fa-github: https://github.com/你的用户名 || GitHub || '#24292e'
+  fas fa-envelope: mailto:your@email.com || Email || '#4a7dbe'
+
+# Image Settings
+favicon: /img/favicon.png
+avatar:
+  img: /img/avatar.png
+  effect: false
+
+# Disable all banner images
+disable_top_img: false
+
+cover:
+  index_enable: true
+  side_machine: true
+  loop: true
+  lazyload: false
+  display_copy_btn: true
+  show_author: true
+  show_date: true
+  layout:
+    - type: slice
+      background:
+      index_side: left
+      text_align: left
+      height: 400
+      style: "display: flex; flex-direction: column; justify-content: center; align-items: center;"
+
+# Footer Settings
+footer:
+  owner:
+    name: 炜煜
+  copyright: true
+
+# Post Settings
+post_meta:
+  date_type: created
+  categories: true
+  tags: true
+
+# Code Blocks
+code_blocks:
+  theme: light
+  macStyle: false
+  copy: true
+  language: true
+  shrink: false
+
+# Social Share
+sharejs:
+  enable: true
+
+# Comments
+comments:
+  enable: true
+  type: utterances
+
+# Search
+local_search:
+  enable: true
+  preload: true
