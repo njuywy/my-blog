@@ -1,0 +1,14 @@
+{
+  "version": 1,
+  "routes": [
+    {"pattern": "*.html", "include": ["public"]},
+    {"pattern": "*.js", "include": ["public"]},
+    {"pattern": "*.css", "include": ["public"]},
+    {"pattern": "*.png", "include": ["public"]},
+    {"pattern": "*.jpg", "include": ["public"]},
+    {"pattern": "*.gif", "include": ["public"]},
+    {"pattern": "*.svg", "include": ["public"]},
+    {"pattern": "*.ico", "include": ["public"]},
+    {"pattern": "*/", "include": ["public"]}
+  ]
+}
