@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>小游戏合集 - 炜煜之博客</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            color: #fff;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 40px 20px;
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            margin-bottom: 30px;
+            backdrop-filter: blur(10px);
+        }
+        
+        h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            background: linear-gradient(90deg, #ff6b6b, #feca57, #48dbfb, #ff9ff3);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .subtitle {
+            color: #aaa;
+            font-size: 1.1em;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            padding: 10px 25px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .games-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 25px;
+            padding: 20px 0;
+        }
+        
+        .game-card {
+            background: rgba(255,255,255,0.1);
+            border-radius: 20px;
+            padding: 30px;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            backdrop-filter: blur(10px);
+            border: 2px solid transparent;
+        }
+        
+        .game-card:hover {
+            transform: translateY(-10px);
+            border-color: #667eea;
+            box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+        }
+        
+        .game-icon {
+            font-size: 4em;
+            margin-bottom: 15px;
+        }
+        
+        .game-title {
+            font-size: 1.5em;
+            margin-bottom: 10px;
+            color: #fff;
+        }
+        
+        .game-desc {
+            color: #aaa;
+            font-size: 0.9em;
+            line-height: 1.6;
+        }
+        
+        .game-difficulty {
+            display: flex;
+            justify-content: center;
+            gap: 5px;
+            margin-top: 15px;
+        }
+        
+        .star {
+            color: #feca57;
+            font-size: 1.2em;
+        }
+        
+        .star.empty {
+            color: #555;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🎮 小游戏合集</h1>
+            <p class="subtitle">点击下方游戏开始挑战！</p>
+            <a href="/my-blog/" class="back-btn">← 返回博客</a>
+        </header>
+        
+        <div class="games-grid">
+            <a href="snake.html" class="game-card">
+                <div class="game-icon">🐍</div>
+                <h2 class="game-title">贪吃蛇</h2>
+                <p class="game-desc">经典怀旧游戏！控制小蛇吃掉食物，让自己越长越长。注意不要撞到墙壁或自己的身体！</p>
+                <div class="game-difficulty">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star empty">★</span>
+                </div>
+            </a>
+            
+            <a href="breakout.html" class="game-card">
+                <div class="game-icon">🧱</div>
+                <h2 class="game-title">打砖块</h2>
+                <p class="game-desc">经典打砖块游戏！控制挡板反弹小球，击碎所有砖块。体验爽快的感觉！</p>
+                <div class="game-difficulty">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star empty">★</span>
+                </div>
+            </a>
+            
+            <a href="space-invaders.html" class="game-card">
+                <div class="game-icon">🚀</div>
+                <h2 class="game-title">太空侵略者</h2>
+                <p class="game-desc">经典射击游戏！保卫地球，消灭入侵的外星飞船。紧张刺激！</p>
+                <div class="game-difficulty">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+            </a>
+            
+            <a href="pong.html" class="game-card">
+                <div class="game-icon">🏓</div>
+                <h2 class="game-title">乒乓球</h2>
+                <p class="game-desc">经典乒乓球游戏！按 ↑ ↓ 键控制挡板，和电脑来一场激烈的对战！</p>
+                <div class="game-difficulty">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star empty">★</span>
+                </div>
+            </a>
+            
+            <a href="2048.html" class="game-card">
+                <div class="game-icon">🎲</div>
+                <h2 class="game-title">2048</h2>
+                <p class="game-desc">益智烧脑游戏！滑动方块合并数字，目标合成2048！简单上瘾。</p>
+                <div class="game-difficulty">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star empty">★</span>
+                </div>
+            </a>
+            
+            <a href="mine-sweeper.html" class="game-card">
+                <div class="game-icon">💣</div>
+                <h2 class="game-title">扫雷</h2>
+                <p class="game-desc">经典扫雷游戏！找出所有安全区域，避免踩到地雷。考验智慧！</p>
+                <div class="game-difficulty">
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                    <span class="star">★</span>
+                </div>
+            </a>
+        </div>
+    </div>
+</body>
+</html>

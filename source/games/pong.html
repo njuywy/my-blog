@@ -1,0 +1,319 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>乒乓球 - 炜煜之博客</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #fff;
+            margin-bottom: 15px;
+            font-size: 2em;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #1e90ff;
+            border-radius: 10px;
+            background: #000;
+            box-shadow: 0 0 30px rgba(30, 144, 255, 0.5);
+        }
+        
+        .info {
+            display: flex;
+            gap: 60px;
+            margin-top: 20px;
+            color: #fff;
+            font-size: 1.3em;
+        }
+        
+        .player-info {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+        
+        .score {
+            font-size: 2em;
+            font-weight: bold;
+            color: #1e90ff;
+        }
+        
+        .controls {
+            margin-top: 20px;
+            color: #aaa;
+            text-align: center;
+        }
+        
+        .back-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            margin-top: 25px;
+            background: linear-gradient(135deg, #1e90ff 0%, #00a8ff 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <h1>🏓 乒乓球</h1>
+    <canvas id="gameCanvas" width="600" height="400"></canvas>
+    <div class="info">
+        <div class="player-info">
+            <span>玩家</span>
+            <span class="score" id="playerScore">0</span>
+        </div>
+        <div class="player-info">
+            <span>电脑</span>
+            <span class="score" id="computerScore">0</span>
+        </div>
+    </div>
+    <div class="controls">
+        <p>↑ 上移 | ↓ 下移 | 空格键开始/暂停</p>
+    </div>
+    <a href="index.html" class="back-btn">← 返回游戏选择</a>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const playerScoreEl = document.getElementById('playerScore');
+        const computerScoreEl = document.getElementById('computerScore');
+        
+        const paddleWidth = 12;
+        const paddleHeight = 80;
+        const ballRadius = 8;
+        
+        let player = { x: 10, y: canvas.height / 2 - paddleHeight / 2, score: 0 };
+        let computer = { x: canvas.width - 22, y: canvas.height / 2 - paddleHeight / 2, score: 0 };
+        let ball = { x: canvas.width / 2, y: canvas.height / 2, dx: 5, dy: 3 };
+        let gameRunning = false;
+        let isPaused = false;
+        let animationId;
+        
+        const winningScore = 11;
+        
+        function drawNet() {
+            ctx.setLineDash([10, 10]);
+            ctx.strokeStyle = '#333';
+            ctx.lineWidth = 2;
+            ctx.beginPath();
+            ctx.moveTo(canvas.width / 2, 0);
+            ctx.lineTo(canvas.width / 2, canvas.height);
+            ctx.stroke();
+            ctx.setLineDash([]);
+        }
+        
+        function drawPlayerPaddle() {
+            const gradient = ctx.createLinearGradient(player.x, player.y, player.x + paddleWidth, player.y);
+            gradient.addColorStop(0, '#1e90ff');
+            gradient.addColorStop(1, '#00a8ff');
+            ctx.beginPath();
+            ctx.roundRect(player.x, player.y, paddleWidth, paddleHeight, 6);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+        
+        function drawComputerPaddle() {
+            const gradient = ctx.createLinearGradient(computer.x, computer.y, computer.x + paddleWidth, computer.y);
+            gradient.addColorStop(0, '#ff4757');
+            gradient.addColorStop(1, '#ff6b81');
+            ctx.beginPath();
+            ctx.roundRect(computer.x, computer.y, paddleWidth, paddleHeight, 6);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+        }
+        
+        function drawBall() {
+            // 发光效果
+            ctx.shadowBlur = 20;
+            ctx.shadowColor = '#fff';
+            
+            const gradient = ctx.createRadialGradient(ball.x, ball.y, 0, ball.x, ball.y, ballRadius);
+            gradient.addColorStop(0, '#fff');
+            gradient.addColorStop(1, '#ddd');
+            ctx.beginPath();
+            ctx.arc(ball.x, ball.y, ballRadius, 0, Math.PI * 2);
+            ctx.fillStyle = gradient;
+            ctx.fill();
+            
+            ctx.shadowBlur = 0;
+        }
+        
+        function draw() {
+            // 清空画布
+            ctx.fillStyle = '#0a0a0a';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            drawNet();
+            drawPlayerPaddle();
+            drawComputerPaddle();
+            drawBall();
+            
+            if (!gameRunning) {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#fff';
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('按空格键开始', canvas.width / 2, canvas.height / 2);
+                return;
+            }
+            
+            if (isPaused) {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#fff';
+                ctx.font = '30px Arial';
+                ctx.textAlign = 'center';
+                ctx.fillText('游戏暂停', canvas.width / 2, canvas.height / 2);
+                ctx.font = '20px Arial';
+                ctx.fillText('按空格键继续', canvas.width / 2, canvas.height / 2 + 40);
+                return;
+            }
+            
+            // 移动球
+            ball.x += ball.dx;
+            ball.y += ball.dy;
+            
+            // 顶部和底部碰撞
+            if (ball.y - ballRadius < 0 || ball.y + ballRadius > canvas.height) {
+                ball.dy = -ball.dy;
+            }
+            
+            // 玩家挡板碰撞
+            if (ball.dx < 0 &&
+                ball.x - ballRadius < player.x + paddleWidth &&
+                ball.y > player.y &&
+                ball.y < player.y + paddleHeight) {
+                ball.dx = -ball.dx * 1.05;
+                const hitPos = (ball.y - player.y) / paddleHeight;
+                ball.dy = (hitPos - 0.5) * 8;
+            }
+            
+            // 电脑挡板碰撞
+            if (ball.dx > 0 &&
+                ball.x + ballRadius > computer.x &&
+                ball.y > computer.y &&
+                ball.y < computer.y + paddleHeight) {
+                ball.dx = -ball.dx * 1.05;
+                const hitPos = (ball.y - computer.y) / paddleHeight;
+                ball.dy = (hitPos - 0.5) * 8;
+            }
+            
+            // 得分
+            if (ball.x < 0) {
+                computer.score++;
+                computerScoreEl.textContent = computer.score;
+                resetBall();
+            } else if (ball.x > canvas.width) {
+                player.score++;
+                playerScoreEl.textContent = player.score;
+                resetBall();
+            }
+            
+            // 电脑AI
+            const computerCenter = computer.y + paddleHeight / 2;
+            if (computerCenter < ball.y - 35) {
+                computer.y += 4;
+            } else if (computerCenter > ball.y + 35) {
+                computer.y -= 4;
+            }
+            
+            // 限制范围
+            computer.y = Math.max(0, Math.min(canvas.height - paddleHeight, computer.y));
+            
+            // 检查获胜
+            if (player.score >= winningScore) {
+                gameOver('恭喜你赢了!');
+                return;
+            } else if (computer.score >= winningScore) {
+                gameOver('电脑赢了!');
+                return;
+            }
+            
+            animationId = requestAnimationFrame(draw);
+        }
+        
+        function resetBall() {
+            ball.x = canvas.width / 2;
+            ball.y = canvas.height / 2;
+            ball.dx = -ball.dx;
+            ball.dy = (Math.random() - 0.5) * 6;
+            // 限制速度
+            ball.dx = Math.sign(ball.dx) * Math.min(Math.abs(ball.dx), 8);
+        }
+        
+        function gameOver(message) {
+            gameRunning = false;
+            cancelAnimationFrame(animationId);
+            ctx.fillStyle = 'rgba(0,0,0,0.8)';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            ctx.fillStyle = message.includes('恭喜') ? '#2ed573' : '#ff4757';
+            ctx.font = '40px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText(message, canvas.width / 2, canvas.height / 2 - 20);
+            ctx.fillStyle = '#fff';
+            ctx.font = '20px Arial';
+            ctx.fillText(`最终比分: ${player.score} - ${computer.score}`, canvas.width / 2, canvas.height / 2 + 20);
+            ctx.fillText('按空格键重新开始', canvas.width / 2, canvas.height / 2 + 60);
+        }
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                if (!gameRunning) {
+                    if (player.score >= winningScore || computer.score >= winningScore) {
+                        player.score = 0;
+                        computer.score = 0;
+                        playerScoreEl.textContent = 0;
+                        computerScoreEl.textContent = 0;
+                    }
+                    gameRunning = true;
+                    resetBall();
+                    draw();
+                } else {
+                    isPaused = !isPaused;
+                    if (!isPaused) draw();
+                }
+            }
+            
+            if (gameRunning && !isPaused) {
+                const speed = 8;
+                switch (e.key) {
+                    case 'ArrowUp':
+                        player.y = Math.max(0, player.y - speed);
+                        break;
+                    case 'ArrowDown':
+                        player.y = Math.min(canvas.height - paddleHeight, player.y + speed);
+                        break;
+                }
+            }
+        });
+        
+        draw();
+    </script>
+</body>
+</html>

@@ -1,0 +1,415 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>扫雷 - 炜煜之博客</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: #ff6b6b;
+            margin-bottom: 15px;
+            font-size: 2em;
+            text-shadow: 0 0 20px rgba(255, 107, 107, 0.5);
+        }
+        
+        .header {
+            display: flex;
+            gap: 40px;
+            margin-bottom: 20px;
+        }
+        
+        .info-box {
+            background: rgba(255,255,255,0.1);
+            padding: 12px 25px;
+            border-radius: 10px;
+            text-align: center;
+        }
+        
+        .info-label {
+            color: #aaa;
+            font-size: 0.85em;
+        }
+        
+        .info-value {
+            color: #fff;
+            font-size: 1.5em;
+            font-weight: bold;
+        }
+        
+        #gameCanvas {
+            border: 3px solid #ff6b6b;
+            border-radius: 10px;
+            background: #2d3436;
+            box-shadow: 0 0 30px rgba(255, 107, 107, 0.3);
+        }
+        
+        .controls {
+            margin-top: 20px;
+            color: #aaa;
+            text-align: center;
+        }
+        
+        .difficulty-select {
+            margin-bottom: 15px;
+        }
+        
+        .difficulty-select button {
+            padding: 8px 20px;
+            margin: 0 5px;
+            background: rgba(255,255,255,0.1);
+            border: 2px solid transparent;
+            border-radius: 20px;
+            color: #fff;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .difficulty-select button.active {
+            border-color: #ff6b6b;
+            background: rgba(255, 107, 107, 0.2);
+        }
+        
+        .difficulty-select button:hover {
+            background: rgba(255, 107, 107, 0.1);
+        }
+        
+        .back-btn {
+            display: inline-block;
+            padding: 12px 30px;
+            margin-top: 20px;
+            background: linear-gradient(135deg, #ff6b6b 0%, #ee5a5a 100%);
+            color: white;
+            text-decoration: none;
+            border-radius: 25px;
+            font-weight: bold;
+            transition: transform 0.3s;
+        }
+        
+        .back-btn:hover {
+            transform: translateY(-3px);
+        }
+    </style>
+</head>
+<body>
+    <h1>💣 扫雷</h1>
+    
+    <div class="difficulty-select">
+        <button onclick="setDifficulty('easy')" class="active" id="easyBtn">简单</button>
+        <button onclick="setDifficulty('medium')" id="mediumBtn">中等</button>
+        <button onclick="setDifficulty('hard')" id="hardBtn">困难</button>
+    </div>
+    
+    <div class="header">
+        <div class="info-box">
+            <div class="info-label">💣 剩余雷数</div>
+            <div class="info-value" id="minesLeft">10</div>
+        </div>
+        <div class="info-box">
+            <div class="info-label">⏱️ 用时</div>
+            <div class="info-value" id="timer">0</div>
+        </div>
+    </div>
+    
+    <canvas id="gameCanvas"></canvas>
+    
+    <div class="controls">
+        <p>左键点击揭开 | 右键标记旗帜 | 空格键重新开始</p>
+    </div>
+    <a href="index.html" class="back-btn">← 返回游戏选择</a>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const minesLeftEl = document.getElementById('minesLeft');
+        const timerEl = document.getElementById('timer');
+        
+        const difficulties = {
+            easy: { rows: 9, cols: 9, mines: 10 },
+            medium: { rows: 12, cols: 12, mines: 20 },
+            hard: { rows: 16, cols: 16, mines: 40 }
+        };
+        
+        let currentDifficulty = 'easy';
+        let cellSize = 40;
+        let grid = [];
+        let gameOver = false;
+        let gameWon = false;
+        let revealed = [];
+        let flagged = [];
+        let minesLeft = 10;
+        let timer = 0;
+        let timerInterval = null;
+        let gameStarted = false;
+        
+        function setDifficulty(level) {
+            currentDifficulty = level;
+            document.querySelectorAll('.difficulty-select button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(level + 'Btn').classList.add('active');
+            initGame();
+        }
+        
+        function initGame() {
+            const { rows, cols, mines } = difficulties[currentDifficulty];
+            
+            cellSize = currentDifficulty === 'hard' ? 35 : 40;
+            canvas.width = cols * cellSize;
+            canvas.height = rows * cellSize;
+            
+            grid = [];
+            revealed = [];
+            flagged = [];
+            minesLeft = mines;
+            timer = 0;
+            gameOver = false;
+            gameWon = false;
+            gameStarted = false;
+            
+            if (timerInterval) clearInterval(timerInterval);
+            timerEl.textContent = '0';
+            minesLeftEl.textContent = mines;
+            
+            // 创建网格
+            for (let i = 0; i < rows; i++) {
+                grid[i] = [];
+                revealed[i] = [];
+                flagged[i] = [];
+                for (let j = 0; j < cols; j++) {
+                    grid[i][j] = 0;
+                    revealed[i][j] = false;
+                    flagged[i][j] = false;
+                }
+            }
+            
+            // 放置地雷
+            let minesPlaced = 0;
+            while (minesPlaced < mines) {
+                const i = Math.floor(Math.random() * rows);
+                const j = Math.floor(Math.random() * cols);
+                if (grid[i][j] !== -1) {
+                    grid[i][j] = -1;
+                    minesPlaced++;
+                }
+            }
+            
+            // 计算数字
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (grid[i][j] === -1) continue;
+                    let count = 0;
+                    for (let di = -1; di <= 1; di++) {
+                        for (let dj = -1; dj <= 1; dj++) {
+                            const ni = i + di, nj = j + dj;
+                            if (ni >= 0 && ni < rows && nj >= 0 && nj < cols && grid[ni][nj] === -1) {
+                                count++;
+                            }
+                        }
+                    }
+                    grid[i][j] = count;
+                }
+            }
+            
+            draw();
+        }
+        
+        function draw() {
+            const { rows, cols } = difficulties[currentDifficulty];
+            
+            // 背景
+            ctx.fillStyle = '#2d3436';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    const x = j * cellSize;
+                    const y = i * cellSize;
+                    
+                    if (revealed[i][j]) {
+                        ctx.fillStyle = '#636e72';
+                        ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+                        
+                        if (grid[i][j] > 0) {
+                            const colors = ['#3498db', '#2ecc71', '#e74c3c', '#9b59b6', '#f39c12', '#1abc9c', '#34495e', '#2c3e50'];
+                            ctx.fillStyle = colors[grid[i][j] - 1] || '#fff';
+                            ctx.font = `bold ${cellSize * 0.6}px Arial`;
+                            ctx.textAlign = 'center';
+                            ctx.textBaseline = 'middle';
+                            ctx.fillText(grid[i][j], x + cellSize / 2, y + cellSize / 2);
+                        }
+                    } else if (flagged[i][j]) {
+                        ctx.fillStyle = '#2d3436';
+                        ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+                        ctx.strokeStyle = '#e74c3c';
+                        ctx.lineWidth = 2;
+                        ctx.beginPath();
+                        ctx.moveTo(x + cellSize * 0.3, y + cellSize * 0.2);
+                        ctx.lineTo(x + cellSize * 0.7, y + cellSize * 0.8);
+                        ctx.lineTo(x + cellSize * 0.3, y + cellSize * 0.8);
+                        ctx.closePath();
+                        ctx.fillStyle = '#e74c3c';
+                        ctx.fill();
+                    } else {
+                        // 未翻开
+                        ctx.fillStyle = '#74b9ff';
+                        ctx.fillRect(x + 1, y + 1, cellSize - 2, cellSize - 2);
+                        // 高光
+                        ctx.fillStyle = '#a8d8ff';
+                        ctx.fillRect(x + 1, y + 1, cellSize - 2, 3);
+                        ctx.fillRect(x + 1, y + 1, 3, cellSize - 2);
+                        // 阴影
+                        ctx.fillStyle = '#5a9fd4';
+                        ctx.fillRect(x + 1, y + cellSize - 4, cellSize - 2, 3);
+                        ctx.fillRect(x + cellSize - 4, y + 1, 3, cellSize - 2);
+                    }
+                }
+            }
+            
+            // 游戏结束提示
+            if (gameOver) {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#e74c3c';
+                ctx.font = 'bold 30px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('💥 踩到地雷了!', canvas.width / 2, canvas.height / 2);
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#fff';
+                ctx.fillText('按空格键重新开始', canvas.width / 2, canvas.height / 2 + 35);
+            }
+            
+            if (gameWon) {
+                ctx.fillStyle = 'rgba(0,0,0,0.7)';
+                ctx.fillRect(0, 0, canvas.width, canvas.height);
+                ctx.fillStyle = '#2ecc71';
+                ctx.font = 'bold 30px Arial';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'middle';
+                ctx.fillText('🎉 恭喜通关!', canvas.width / 2, canvas.height / 2);
+                ctx.font = '16px Arial';
+                ctx.fillStyle = '#fff';
+                ctx.fillText(`用时: ${timer}秒`, canvas.width / 2, canvas.height / 2 + 35);
+            }
+        }
+        
+        function reveal(i, j) {
+            const { rows, cols } = difficulties[currentDifficulty];
+            
+            if (i < 0 || i >= rows || j < 0 || j >= cols) return;
+            if (revealed[i][j] || flagged[i][j]) return;
+            
+            revealed[i][j] = true;
+            
+            if (grid[i][j] === -1) {
+                // 踩到地雷
+                gameOver = true;
+                clearInterval(timerInterval);
+                revealAllMines();
+                draw();
+                return;
+            }
+            
+            if (grid[i][j] === 0) {
+                // 空白区域，自动翻开周围
+                for (let di = -1; di <= 1; di++) {
+                    for (let dj = -1; dj <= 1; dj++) {
+                        reveal(i + di, j + dj);
+                    }
+                }
+            }
+            
+            checkWin();
+            draw();
+        }
+        
+        function revealAllMines() {
+            const { rows, cols } = difficulties[currentDifficulty];
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (grid[i][j] === -1) revealed[i][j] = true;
+                }
+            }
+        }
+        
+        function checkWin() {
+            const { rows, cols, mines } = difficulties[currentDifficulty];
+            let unrevealedSafe = 0;
+            for (let i = 0; i < rows; i++) {
+                for (let j = 0; j < cols; j++) {
+                    if (!revealed[i][j] && grid[i][j] !== -1) {
+                        unrevealedSafe++;
+                    }
+                }
+            }
+            if (unrevealedSafe === 0) {
+                gameWon = true;
+                clearInterval(timerInterval);
+            }
+        }
+        
+        function startTimer() {
+            if (!gameStarted) {
+                gameStarted = true;
+                timerInterval = setInterval(() => {
+                    timer++;
+                    timerEl.textContent = timer;
+                }, 1000);
+            }
+        }
+        
+        function handleClick(e) {
+            if (gameOver || gameWon) return;
+            
+            const rect = canvas.getBoundingClientRect();
+            const x = e.clientX - rect.left;
+            const y = e.clientY - rect.top;
+            const j = Math.floor(x / cellSize);
+            const i = Math.floor(y / cellSize);
+            
+            if (e.button === 0) {
+                // 左键
+                startTimer();
+                reveal(i, j);
+            } else if (e.button === 2) {
+                // 右键
+                e.preventDefault();
+                const { rows, cols } = difficulties[currentDifficulty];
+                if (i >= 0 && i < rows && j >= 0 && j < cols && !revealed[i][j]) {
+                    flagged[i][j] = !flagged[i][j];
+                    minesLeft += flagged[i][j] ? -1 : 1;
+                    minesLeftEl.textContent = minesLeft;
+                    draw();
+                }
+            }
+        }
+        
+        canvas.addEventListener('mousedown', handleClick);
+        canvas.addEventListener('contextmenu', e => e.preventDefault());
+        
+        document.addEventListener('keydown', (e) => {
+            if (e.code === 'Space') {
+                e.preventDefault();
+                initGame();
+            }
+        });
+        
+        initGame();
+    </script>
+</body>
+</html>
