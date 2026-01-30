@@ -22,7 +22,7 @@ pretty_urls:
 
 # Directory
 source_dir: source
-public_dir: public
+public_dir: docs
 tag_dir: tags
 archive_dir: archives
 category_dir: categories
@@ -96,10 +96,10 @@ ignore:
 # Extensions
 ## Plugins: https://hexo.io/plugins/
 ## Themes: https://hexo.io/themes/
-theme: butterfly
+theme: false
 
 # Deployment
 deploy:
   type: git
-  repo: https://github.com/你的用户名/你的仓库名.git
+  repo: https://github.com/njuywy/my-blog.git
   branch: gh-pages
