@@ -8,6 +8,9 @@ tags:
   - JAXB
   - XML
 description: JAXB（Java Architecture for XML Binding）使用指南
+excerpt: |
+  本文介绍了JAXB（Java Architecture for XML Binding）的使用方法，包括Maven依赖配置、从XSD生成Java类、XML序列化与反序列化、DOM Transformer格式化以及处理自闭合标签等技术要点。
+---
 ---
 
 # JAXB使用文档
